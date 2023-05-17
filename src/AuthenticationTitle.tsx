@@ -11,10 +11,11 @@ import {
   Button,
 } from "@mantine/core";
 
-import { signInAnonymously } from "firebase/auth";
 import { auth } from "./firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { signInAnonymously, signOut } from "firebase/auth";
 
-function logInAnonymously() {
+const logInAnonymously = () => {
   signInAnonymously(auth)
     .then(() => {
       console.log("Logged in");
@@ -25,9 +26,20 @@ function logInAnonymously() {
       // ...
       console.log("error");
     });
-}
+};
+
+const logOut = () => {
+  signOut(auth)
+    .then(() => {
+      // Sign-out successful.
+    })
+    .catch((error) => {
+      // An error happened.
+    });
+};
 
 export function AuthenticationTitle() {
+  const [user, loading, error] = useAuthState(auth);
   return (
     <Container size={420} my={40}>
       <Title
@@ -39,7 +51,11 @@ export function AuthenticationTitle() {
       >
         Super To Do List
       </Title>
-      <Button onClick={logInAnonymously}>Log in anonymously</Button>
+      {user ? (
+        <Button onClick={logOut}>Sign out</Button>
+      ) : (
+        <Button onClick={logInAnonymously}>Log in anonymously</Button>
+      )}
 
       {/* <Text color="dimmed" size="sm" align="center" mt={5}>
         Do not have an account yet?{" "}
