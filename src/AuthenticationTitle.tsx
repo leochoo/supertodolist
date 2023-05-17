@@ -13,7 +13,14 @@ import {
 
 import { auth } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { signInAnonymously, signOut } from "firebase/auth";
+import {
+  signInAnonymously,
+  signOut,
+  User,
+  AuthState,
+  AuthError,
+} from "firebase/auth";
+import { ReactNode } from "react";
 
 const logInAnonymously = () => {
   signInAnonymously(auth)
@@ -21,8 +28,6 @@ const logInAnonymously = () => {
       console.log("Logged in");
     })
     .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
       // ...
       console.log("error");
     });
@@ -31,15 +36,16 @@ const logInAnonymously = () => {
 const logOut = () => {
   signOut(auth)
     .then(() => {
-      // Sign-out successful.
+      console.log("Logged out");
     })
-    .catch((error) => {
+    .catch(() => {
       // An error happened.
     });
 };
 
 export function AuthenticationTitle() {
   const [user, loading, error] = useAuthState(auth);
+
   return (
     <Container size={420} my={40}>
       <Title
@@ -51,10 +57,24 @@ export function AuthenticationTitle() {
       >
         Super To Do List
       </Title>
+
+      {/* show loading screen when loading */}
+      {loading && <Text align="center">Loading...</Text>}
+      {/* show error when error */}
+      {error && (
+        <Text align="center" color="red">
+          {String(error)}
+        </Text>
+      )}
+
       {user ? (
-        <Button onClick={logOut}>Sign out</Button>
+        <>
+          <Button onClick={logOut}>Sign out</Button>
+          <Text>Welcome {user.uid}</Text>
+        </>
       ) : (
-        <Button onClick={logInAnonymously}>Log in anonymously</Button>
+        // show log in button when not logged in, but don't show log in button when loading
+        !loading && <Button onClick={logInAnonymously}>Log in</Button>
       )}
 
       {/* <Text color="dimmed" size="sm" align="center" mt={5}>
