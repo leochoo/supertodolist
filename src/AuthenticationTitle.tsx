@@ -11,9 +11,16 @@ import {
   Button,
 } from "@mantine/core";
 import { AllTodoList } from "./AllToDoList";
-import { auth } from "./firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { signInAnonymously, signOut, User, AuthError } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { useAuthState, useSignInWithGoogle } from "react-firebase-hooks/auth";
+import {
+  signInAnonymously,
+  signOut,
+  User,
+  AuthError,
+  UserCredential,
+} from "firebase/auth";
+import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
 
 const logInAnonymously = () => {
   signInAnonymously(auth)
@@ -140,7 +147,36 @@ const dummyData = [
 ];
 
 export function AuthenticationTitle() {
-  const [user, loading, error] = useAuthState(auth);
+  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth);
+
+  const handleSignInWithGoogle = async () => {
+    try {
+      const userCredential = await signInWithGoogle();
+      const user = userCredential?.user;
+
+      if (!user) {
+        throw new Error("Failed to sign in with Google");
+      }
+
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (!userDocSnapshot.exists()) {
+        // User is signing in for the first time, create a new document
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          email: user.email,
+          createdAt: new Date(),
+        });
+
+        console.log("New user document created");
+      } else {
+        console.log("User already exists in Firestore collection");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Container my={40}>
@@ -166,11 +202,11 @@ export function AuthenticationTitle() {
       {user ? (
         <>
           <Button onClick={logOut}>Sign out</Button>
-          <Text>Welcome {user.uid}</Text>
+          <Text>Welcome {user.user.displayName}</Text>
         </>
       ) : (
         // show log in button when not logged in, but don't show log in button when loading
-        !loading && <Button onClick={logInAnonymously}>Log in</Button>
+        !loading && <Button onClick={handleSignInWithGoogle}>Log in</Button>
       )}
 
       <AllTodoList data={dummyData} />
