@@ -13,14 +13,7 @@ import {
 
 import { auth } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import {
-  signInAnonymously,
-  signOut,
-  User,
-  AuthState,
-  AuthError,
-} from "firebase/auth";
-import { ReactNode } from "react";
+import { signInAnonymously, signOut, User, AuthError } from "firebase/auth";
 
 const logInAnonymously = () => {
   signInAnonymously(auth)
