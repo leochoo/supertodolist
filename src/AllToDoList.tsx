@@ -23,6 +23,7 @@ interface Task {
   uid: string;
   title: string;
   description: string;
+  project: string;
   completed: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -64,6 +65,7 @@ export function AllTodoList({ data }: AllTodoListProps) {
         </td>
         <td>{item.title}</td>
         <td>{item.description}</td>
+        <td>{item.project}</td>
         <td>{item.dueDate.toLocaleDateString()}</td>
       </tr>
     );
@@ -86,6 +88,7 @@ export function AllTodoList({ data }: AllTodoListProps) {
             </th>
             <th>Title</th>
             <th>Description</th>
+            <th>Project</th>
             <th>Due Date</th>
           </tr>
         </thead>
