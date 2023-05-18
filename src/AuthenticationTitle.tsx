@@ -21,6 +21,8 @@ import {
   UserCredential,
 } from "firebase/auth";
 import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { NewTaskInput } from "./NewTaskInput";
+import { useState } from "react";
 
 const logInAnonymously = () => {
   signInAnonymously(auth)
@@ -146,8 +148,21 @@ const dummyData = [
   },
 ];
 
+interface Task {
+  uid: string;
+  title: string;
+  description: string;
+  project: string;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  dueDate: Date;
+}
+
 export function AuthenticationTitle() {
   const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth);
+
+  const [tasks, setTasks] = useState(dummyData);
 
   const handleSignInWithGoogle = async () => {
     try {
@@ -176,6 +191,11 @@ export function AuthenticationTitle() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleAddTask = (newTask: Task) => {
+    // Update the dummyData array with the new task
+    setTasks((prevTasks) => [...prevTasks, newTask]);
   };
 
   return (
@@ -208,8 +228,11 @@ export function AuthenticationTitle() {
         // show log in button when not logged in, but don't show log in button when loading
         !loading && <Button onClick={handleSignInWithGoogle}>Log in</Button>
       )}
+      <Container my={20}>
+        <NewTaskInput addTask={handleAddTask} />
+      </Container>
 
-      <AllTodoList data={dummyData} />
+      <AllTodoList data={tasks} />
     </Container>
   );
 }
