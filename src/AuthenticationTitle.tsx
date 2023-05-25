@@ -20,20 +20,18 @@ import {
   AuthError,
   UserCredential,
 } from "firebase/auth";
-import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  doc,
+  getDoc,
+  setDoc,
+  getDocs,
+} from "firebase/firestore";
 import { NewTaskInput } from "./NewTaskInput";
-import { useState } from "react";
-
-const logInAnonymously = () => {
-  signInAnonymously(auth)
-    .then(() => {
-      console.log("Logged in");
-    })
-    .catch((error) => {
-      // ...
-      console.log("error");
-    });
-};
+import { useEffect, useState } from "react";
+import { Task } from "./types/types";
+import { serverTimestamp } from "firebase/firestore";
 
 const logOut = () => {
   signOut(auth)
@@ -45,124 +43,77 @@ const logOut = () => {
     });
 };
 
-const dummyData = [
-  {
-    uid: "1",
-    title: "Complete project proposal",
-    description: "Write and submit project proposal document",
-    project: "School",
-    completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 20),
-  },
-  {
-    uid: "2",
-    title: "Prepare presentation slides",
-    description: "Create slides for the upcoming meeting",
-    project: "School",
-    completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 22),
-  },
-  {
-    uid: "3",
-    title: "Study for the exam",
-    description: "Review lecture notes and textbooks",
-    project: "School",
-    completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 25),
-  },
-  {
-    uid: "4",
-    title: "Submit assignment",
-    description: "Complete and submit the programming assignment",
-    project: "School",
-    completed: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 27),
-  },
-  {
-    uid: "5",
-    title: "Read literature book",
-    description: "Read and analyze the assigned literature book",
-    project: "School",
-    completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 30),
-  },
-  {
-    uid: "6",
-    title: "Go for a run",
-    description: "Run 5 miles in the park",
-    project: "Personal",
-    completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 21),
-  },
-  {
-    uid: "7",
-    title: "Organize closet",
-    description: "Declutter and organize the bedroom closet",
-    project: "Personal",
-    completed: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 23),
-  },
-  {
-    uid: "8",
-    title: "Plan vacation",
-    description: "Research and plan the upcoming vacation",
-    project: "Personal",
-    completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 25),
-  },
-  {
-    uid: "9",
-    title: "Practice guitar",
-    description: "Learn and practice new guitar chords",
-    project: "Personal",
-    completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 28),
-  },
-  {
-    uid: "10",
-    title: "Watch movie",
-    description: "Watch the latest blockbuster movie",
-    project: "Personal",
-    completed: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(2023, 5, 30),
-  },
-];
-
-interface Task {
-  uid: string;
-  title: string;
-  description: string;
-  project: string;
-  completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  dueDate: Date;
-}
-
 export function AuthenticationTitle() {
-  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(auth);
+  const [user, loading, error] = useAuthState(auth);
+  const [signInWithGoogle] = useSignInWithGoogle(auth);
 
-  const [tasks, setTasks] = useState(dummyData);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      const fetchTasks = async () => {
+        const tasksCollectionRef = collection(db, "Users", user.uid, "Tasks");
+        const tasksSnapshot = await getDocs(tasksCollectionRef);
+        const tasksData = tasksSnapshot.docs.map((doc) => doc.data() as Task);
+        setTasks(tasksData);
+      };
+
+      fetchTasks();
+    }
+  }, [user]);
+
+  // console log tasks if task is not empty
+  useEffect(() => {
+    if (tasks.length !== 0) {
+      console.log(tasks);
+      console.log(tasks[0].dueDate && tasks[0].dueDate.toDate().toISOString());
+    }
+  }, [tasks]);
+
+  const createUserAndTasks = async (user: User) => {
+    const userRef = doc(db, "Users", user.uid);
+    const tasksRef = collection(userRef, "Tasks");
+
+    const userSnapshot = await getDoc(userRef);
+
+    if (!userSnapshot.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        name: user.displayName || "",
+        email: user.email || "",
+        createdAt: serverTimestamp(),
+      });
+
+      await setDoc(doc(tasksRef), {
+        uid: user.uid,
+        title: "Sample Task",
+        description: "This is a sample task",
+        project: "Sample Project",
+        completed: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        dueDate: new Date(),
+      });
+    }
+  };
+
+  const logInAnonymously = () => {
+    signInAnonymously(auth)
+      .then((userCredential) => {
+        const user = userCredential?.user;
+
+        if (!user) {
+          throw new Error("Failed to log in anonymously");
+        }
+
+        createUserAndTasks(user);
+
+        console.log("Logged in anonymously");
+      })
+      .catch((error) => {
+        console.log("Error logging in anonymously:", error);
+      });
+  };
 
   const handleSignInWithGoogle = async () => {
     try {
@@ -173,29 +124,12 @@ export function AuthenticationTitle() {
         throw new Error("Failed to sign in with Google");
       }
 
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnapshot = await getDoc(userDocRef);
+      createUserAndTasks(user);
 
-      if (!userDocSnapshot.exists()) {
-        // User is signing in for the first time, create a new document
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          email: user.email,
-          createdAt: new Date(),
-        });
-
-        console.log("New user document created");
-      } else {
-        console.log("User already exists in Firestore collection");
-      }
+      console.log("Signed in with Google");
     } catch (error) {
-      console.log(error);
+      console.log("Error signing in with Google:", error);
     }
-  };
-
-  const handleAddTask = (newTask: Task) => {
-    // Update the dummyData array with the new task
-    setTasks((prevTasks) => [...prevTasks, newTask]);
   };
 
   return (
@@ -210,9 +144,7 @@ export function AuthenticationTitle() {
         Super To Do List
       </Title>
 
-      {/* show loading screen when loading */}
       {loading && <Text align="center">Loading...</Text>}
-      {/* show error when error */}
       {error && (
         <Text align="center" color="red">
           {String(error)}
@@ -222,14 +154,20 @@ export function AuthenticationTitle() {
       {user ? (
         <>
           <Button onClick={logOut}>Sign out</Button>
-          <Text>Welcome {user.user.displayName}</Text>
+          <Text>Welcome {user.uid}</Text>
         </>
       ) : (
-        // show log in button when not logged in, but don't show log in button when loading
-        !loading && <Button onClick={handleSignInWithGoogle}>Log in</Button>
+        !loading && (
+          <>
+            <Button onClick={logInAnonymously}>Log in anonymously</Button>
+            <Button onClick={handleSignInWithGoogle}>
+              Sign in with Google
+            </Button>
+          </>
+        )
       )}
       <Container my={20}>
-        <NewTaskInput addTask={handleAddTask} />
+        <NewTaskInput />
       </Container>
 
       <AllTodoList data={tasks} />

@@ -9,6 +9,7 @@ import {
   Text,
   rem,
 } from "@mantine/core";
+import { Task } from "./types/types";
 
 const useStyles = createStyles((theme) => ({
   rowSelected: {
@@ -18,17 +19,6 @@ const useStyles = createStyles((theme) => ({
         : theme.colors[theme.primaryColor][0],
   },
 }));
-
-interface Task {
-  uid: string;
-  title: string;
-  description: string;
-  project: string;
-  completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  dueDate: Date;
-}
 
 interface AllTodoListProps {
   data: Task[];
@@ -66,7 +56,7 @@ export function AllTodoList({ data }: AllTodoListProps) {
         <td>{item.title}</td>
         <td>{item.description}</td>
         <td>{item.project}</td>
-        <td>{item.dueDate.toLocaleDateString()}</td>
+        <td>{item.dueDate && item.dueDate.toDate().toLocaleDateString()}</td>
       </tr>
     );
   });

@@ -1,23 +1,11 @@
 import { useState } from "react";
 import { Container, Button, TextInput, Text } from "@mantine/core";
 import { v4 as uuidv4 } from "uuid";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { Task } from "./types/types";
+import { db } from "./firebase";
 
-interface NewTaskInputProps {
-  addTask: (task: Task) => void;
-}
-
-interface Task {
-  uid: string;
-  title: string;
-  description: string;
-  project: string;
-  completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  dueDate: Date;
-}
-
-export function NewTaskInput({ addTask }: NewTaskInputProps) {
+export function NewTaskInput() {
   const [showInputField, setShowInputField] = useState(false);
   const [task, setTask] = useState<Task>({
     uid: "",
@@ -25,31 +13,58 @@ export function NewTaskInput({ addTask }: NewTaskInputProps) {
     description: "",
     project: "",
     completed: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    dueDate: new Date(),
+    createdAt: null,
+    updatedAt: null,
+    dueDate: null,
   });
 
   const handleNewTaskClick = () => {
     setShowInputField(true);
   };
 
-  const handleTaskSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleTaskSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const taskWithUID = { ...task, uid: uuidv4() };
-    addTask(taskWithUID);
+
+    // Add the task to the Tasks collection
+    try {
+      const tasksCollectionRef = collection(db, "Tasks");
+      await addDoc(tasksCollectionRef, taskWithUID);
+    } catch (error) {
+      console.log("Error adding task to Firestore:", error);
+      return;
+    }
+
+    // Clear the form and reset the state
     setTask({
       uid: "",
       title: "",
       description: "",
       project: "",
       completed: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      dueDate: new Date(),
+      createdAt: null,
+      updatedAt: null,
+      dueDate: null,
     });
     setShowInputField(false);
   };
+
+  // const handleTaskSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  //   event.preventDefault();
+  //   const taskWithUID = { ...task, uid: uuidv4() };
+  //   addTask(taskWithUID);
+  //   setTask({
+  //     uid: "",
+  //     title: "",
+  //     description: "",
+  //     project: "",
+  //     completed: false,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //     dueDate: new Date(),
+  //   });
+  //   setShowInputField(false);
+  // };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.currentTarget;
@@ -85,7 +100,11 @@ export function NewTaskInput({ addTask }: NewTaskInputProps) {
             label="Due Date"
             name="dueDate"
             type="date"
-            value={task.dueDate.toISOString().split("T")[0]}
+            value={
+              task.dueDate
+                ? task.dueDate.toDate().toISOString().split("T")[0]
+                : ""
+            }
             onChange={handleInputChange}
             required
           />
