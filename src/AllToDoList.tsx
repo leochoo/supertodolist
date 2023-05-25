@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createStyles,
   Table,
@@ -10,6 +10,8 @@ import {
   rem,
 } from "@mantine/core";
 import { Task } from "./types/types";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "./firebase";
 
 const useStyles = createStyles((theme) => ({
   rowSelected: {
@@ -21,13 +23,27 @@ const useStyles = createStyles((theme) => ({
 }));
 
 interface AllTodoListProps {
-  data: Task[];
+  userId: string;
 }
 
-export function AllTodoList({ data }: AllTodoListProps) {
+export function AllTodoList({ userId }: AllTodoListProps) {
   const { classes, cx } = useStyles();
   const [selection, setSelection] = useState<string[]>([]);
+  const [data, setData] = useState<Task[]>([]);
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "Users", userId, "Tasks"),
+      (snapshot) => {
+        const tasksData = snapshot.docs.map((doc) => doc.data() as Task);
+        setData(tasksData);
+      }
+    );
+
+    return () => {
+      unsubscribe(); // Unsubscribe from the snapshot listener when component unmounts
+    };
+  }, [userId]);
   const toggleRow = (id: string) => {
     setSelection((current) =>
       current.includes(id)

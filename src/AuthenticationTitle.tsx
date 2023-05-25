@@ -160,7 +160,7 @@ export function AuthenticationTitle() {
       )}
       <Container my={20}>{user && <NewTaskInput user={user} />}</Container>
 
-      <AllTodoList data={tasks} />
+      {user && <AllTodoList userId={user.uid} />}
     </Container>
   );
 }
