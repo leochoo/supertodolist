@@ -62,14 +62,6 @@ export function AuthenticationTitle() {
     }
   }, [user]);
 
-  // console log tasks if task is not empty
-  useEffect(() => {
-    if (tasks.length !== 0) {
-      console.log(tasks);
-      console.log(tasks[0].dueDate && tasks[0].dueDate.toDate().toISOString());
-    }
-  }, [tasks]);
-
   const createUserAndTasks = async (user: User) => {
     const userRef = doc(db, "Users", user.uid);
     const tasksRef = collection(userRef, "Tasks");

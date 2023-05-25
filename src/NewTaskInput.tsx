@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { TextInput, Button, Container } from "@mantine/core";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  serverTimestamp,
+} from "firebase/firestore";
 import { Task } from "./types/types";
 import { db } from "./firebase";
 import { DateInput } from "@mantine/dates";
@@ -19,8 +24,8 @@ export function NewTaskInput({ user }: NewTaskInputProps) {
     description: "",
     project: "",
     completed: false,
-    createdAt: null,
-    updatedAt: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     dueDate: null,
   });
 
@@ -49,8 +54,8 @@ export function NewTaskInput({ user }: NewTaskInputProps) {
       description: "",
       project: "",
       completed: false,
-      createdAt: null,
-      updatedAt: null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       dueDate: null,
     });
     setShowInputField(false);

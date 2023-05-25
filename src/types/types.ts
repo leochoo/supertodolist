@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+import { FieldValue, Timestamp } from "firebase/firestore";
 
 export interface Task {
   uid: string;
@@ -6,7 +6,7 @@ export interface Task {
   description?: string;
   project?: string;
   completed: boolean;
-  createdAt: Timestamp | null;
-  updatedAt: Timestamp | null;
+  createdAt: FieldValue;
+  updatedAt: FieldValue;
   dueDate: Timestamp | null;
 }
