@@ -27,11 +27,13 @@ import {
   getDoc,
   setDoc,
   getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 import { NewTaskInput } from "./NewTaskInput";
 import { useEffect, useState } from "react";
 import { Task } from "./types/types";
 import { serverTimestamp } from "firebase/firestore";
+import { DndListHandle } from "./DndListHandle";
 
 const logOut = () => {
   signOut(auth)
@@ -46,6 +48,23 @@ const logOut = () => {
 export function AuthenticationTitle() {
   const [user, loading, error] = useAuthState(auth);
   const [signInWithGoogle] = useSignInWithGoogle(auth);
+  const [data, setData] = useState<Task[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      const unsubscribe = onSnapshot(
+        collection(db, "Users", user.uid, "Tasks"),
+        (snapshot) => {
+          const tasksData = snapshot.docs.map((doc) => doc.data() as Task);
+          setData(tasksData);
+        }
+      );
+
+      return () => {
+        unsubscribe(); // Unsubscribe from the snapshot listener when component unmounts
+      };
+    }
+  }, [user]);
 
   const createUserAndTasks = async (user: User) => {
     const userRef = doc(db, "Users", user.uid);
@@ -109,6 +128,39 @@ export function AuthenticationTitle() {
     }
   };
 
+  const chemData = [
+    {
+      position: 6,
+      mass: 12.011,
+      symbol: "C",
+      name: "Carbon",
+    },
+    {
+      position: 7,
+      mass: 14.007,
+      symbol: "N",
+      name: "Nitrogen",
+    },
+    {
+      position: 39,
+      mass: 88.906,
+      symbol: "Y",
+      name: "Yttrium",
+    },
+    {
+      position: 56,
+      mass: 137.33,
+      symbol: "Ba",
+      name: "Barium",
+    },
+    {
+      position: 58,
+      mass: 140.12,
+      symbol: "Ce",
+      name: "Cerium",
+    },
+  ];
+
   return (
     <Container my={40}>
       <Title
@@ -145,7 +197,8 @@ export function AuthenticationTitle() {
       )}
       <Container my={20}>{user && <NewTaskInput user={user} />}</Container>
 
-      {user && <AllTodoList userId={user.uid} />}
+      {/* {user && <AllTodoList data={data} />} */}
+      {user && <DndListHandle data={chemData} />}
     </Container>
   );
 }

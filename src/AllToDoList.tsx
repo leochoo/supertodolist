@@ -23,27 +23,13 @@ const useStyles = createStyles((theme) => ({
 }));
 
 interface AllTodoListProps {
-  userId: string;
+  data: Task[];
 }
 
-export function AllTodoList({ userId }: AllTodoListProps) {
+export function AllTodoList({ data }: AllTodoListProps) {
   const { classes, cx } = useStyles();
   const [selection, setSelection] = useState<string[]>([]);
-  const [data, setData] = useState<Task[]>([]);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "Users", userId, "Tasks"),
-      (snapshot) => {
-        const tasksData = snapshot.docs.map((doc) => doc.data() as Task);
-        setData(tasksData);
-      }
-    );
-
-    return () => {
-      unsubscribe(); // Unsubscribe from the snapshot listener when component unmounts
-    };
-  }, [userId]);
   const toggleRow = (id: string) => {
     setSelection((current) =>
       current.includes(id)

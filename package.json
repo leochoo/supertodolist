@@ -14,14 +14,17 @@
     "@mantine/core": "^6.0.11",
     "@mantine/dates": "^6.0.11",
     "@mantine/hooks": "^6.0.11",
+    "@tabler/icons-react": "^2.20.0",
     "firebase": "^9.22.0",
     "react": "^18.2.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "react-firebase-hooks": "^5.1.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",
+    "@types/react-beautiful-dnd": "^13.1.4",
     "@types/react-dom": "^18.0.11",
     "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
