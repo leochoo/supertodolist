@@ -47,21 +47,6 @@ export function AuthenticationTitle() {
   const [user, loading, error] = useAuthState(auth);
   const [signInWithGoogle] = useSignInWithGoogle(auth);
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  useEffect(() => {
-    if (user) {
-      const fetchTasks = async () => {
-        const tasksCollectionRef = collection(db, "Users", user.uid, "Tasks");
-        const tasksSnapshot = await getDocs(tasksCollectionRef);
-        const tasksData = tasksSnapshot.docs.map((doc) => doc.data() as Task);
-        setTasks(tasksData);
-      };
-
-      fetchTasks();
-    }
-  }, [user]);
-
   const createUserAndTasks = async (user: User) => {
     const userRef = doc(db, "Users", user.uid);
     const tasksRef = collection(userRef, "Tasks");
