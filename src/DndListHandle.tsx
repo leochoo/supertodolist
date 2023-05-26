@@ -68,7 +68,7 @@ export function DndListHandle({ data }: DndListHandleProps) {
             <Text size="sm" color="dimmed">
               {item.description}
             </Text>
-            <Text size="xs">
+            <Text size="xs" color="gray">
               {item.dueDate
                 ? `Due: ${item.dueDate.toDate().toLocaleDateString()}`
                 : ""}
