@@ -23,10 +23,8 @@ const useStyles = createStyles((theme) => ({
     boxShadow: theme.shadows.sm,
   },
 
-  symbol: {
-    fontSize: rem(30),
-    fontWeight: 700,
-    width: rem(60),
+  itemContent: {
+    marginLeft: theme.spacing.md,
   },
 
   dragHandle: {
@@ -65,11 +63,15 @@ export function DndListHandle({ data }: DndListHandleProps) {
           <div {...provided.dragHandleProps} className={classes.dragHandle}>
             <IconGripVertical size="1.05rem" stroke={1.5} />
           </div>
-          <Text className={classes.symbol}>{item.uid}</Text>
-          <div>
-            <Text>{item.title}</Text>
-            <Text color="dimmed" size="sm">
-              Description: {item.description}
+          <div className={classes.itemContent}>
+            <Text weight={500}>{item.title}</Text>
+            <Text size="sm" color="dimmed">
+              {item.description}
+            </Text>
+            <Text size="xs">
+              {item.dueDate
+                ? `Due: ${item.dueDate.toDate().toLocaleDateString()}`
+                : ""}
             </Text>
           </div>
         </div>
