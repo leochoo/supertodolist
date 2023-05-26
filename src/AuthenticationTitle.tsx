@@ -198,7 +198,7 @@ export function AuthenticationTitle() {
       <Container my={20}>{user && <NewTaskInput user={user} />}</Container>
 
       {user && <AllTodoList data={data} />}
-      {/* {user && <DndListHandle data={chemData} />} */}
+      {user && data.length > 0 && <DndListHandle data={data} />}
     </Container>
   );
 }
